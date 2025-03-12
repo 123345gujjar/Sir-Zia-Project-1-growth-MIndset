@@ -26,7 +26,8 @@ st.title("Data Sweeper Intergiling By Muhammed Shahzaib")
 st.write("Transform your File Between CVS and Excel With Built-In DAta Claening And visulising Creating This Project For Quater 3!!!!")
 
 #FILE UPLODER
-uploaded_file=st.file_uploader("Upload Your File (only CVS And Excel):", type=["cvs","xlxs"],except_multiple_files=(True))
+uploaded_file = st.file_uploader("Upload Your File (only CSV and Excel):", type=["csv", "xlsx"], accept_multiple_files=True)
+
 
 if uploaded_file:
     for file in uploaded_file:
