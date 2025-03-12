@@ -4,7 +4,7 @@ import os
 from io import BytesIO
 
 
-st.set_page_config(page_title="Data Sweeper" , layout='Wide')
+st.set_page_config(page_title ="Data Sweeper" , layout='wide')
 
 #custom css
 st.markdown(
