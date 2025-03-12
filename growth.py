@@ -73,7 +73,12 @@ if uploaded_file:
 
                   st.subheader("Data Visulization")
                   st.checkbox(f"Show Visulization For{file.name}")
-                  st.bar_chart(df.select_dtypes(include='number').iloc[:,:2])
+                  numeric_df = df.select_dtypes(include='number')
+                  if numeric_df.shape[1] >= 2:
+                      st.bar_chart(numeric_df.iloc[:, :2])
+                  else:   
+                       st.warning("There are fewer than two numeric columns to plot.") 
+
 
                   #Conservation Option
 
