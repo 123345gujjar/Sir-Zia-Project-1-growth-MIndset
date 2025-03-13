@@ -3,118 +3,99 @@ import pandas as pd
 import os
 from io import BytesIO
 
+st.set_page_config(page_title="Data Sweeper", layout='wide')
 
-st.set_page_config(page_title ="Data Sweeper" , layout='wide')
-
-#custom css
+# Custom CSS
 st.markdown(
     """
      <style>
      .stApp{
         background-color: black;
-        color:white;
+        color: white;
      }
      </style>
     """,
     unsafe_allow_html=True
-
 )
 
-#Title and dscription
+# Title and description
+st.title("Data Sweeper Integrated By Muhammed Shahzaib")
+st.write("Transform your File Between CSV and Excel With Built-In Data Cleaning And Visualization. Created for Quarter 3!!!!")
 
-st.title("Data Sweeper Intergiling By Muhammed Shahzaib")
-st.write("Transform your File Between CVS and Excel With Built-In DAta Claening And visulising Creating This Project For Quater 3!!!!")
+# File uploader
+uploaded_files = st.file_uploader("Upload Your File (only CSV and Excel):", type=["csv", "xlsx"], accept_multiple_files=True)
 
-#FILE UPLODER
-uploaded_file = st.file_uploader("Upload Your File (only CSV and Excel):", type=["csv", "xlsx"], accept_multiple_files=True)
+# Processing uploaded files
+if uploaded_files:
+    for file in uploaded_files:
+        file_ext = os.path.splitext(file.name)[-1].lower()
 
-
-if uploaded_file:
-    for file in uploaded_file:
-        file_ext= os.path.splitext(file.name)[-1].lower()
-
-        if file_ext==".cvs":
-            df=pd.read_csv(file)
-
-        elif file_ext=="xlsx":
-            df=pd.read_excel(file)
-            
+        # File type handling
+        if file_ext == ".csv":
+            df = pd.read_csv(file)
+        elif file_ext == ".xlsx":
+            df = pd.read_excel(file)
         else:
-            st.error(f"Unsupported File TYpe:{file_ext}")
+            st.error(f"Unsupported File Type: {file_ext}")
             continue
 
-        #File Details
-        st.write("Prewie The Head of The Data frame")
+        # File Details
+        st.write("Preview of the DataFrame:")
         st.dataframe(df.head())
 
-        #data claening option
-
-        st.subheader("Data Cleaning Option")
-    if st.checkbox(f"Clean Data For{file.name}"):
-            col1,col2=st.columns(2)
+        # Data cleaning options
+        st.subheader("Data Cleaning Options")
+        if st.checkbox(f"Clean Data for {file.name}"):
+            col1, col2 = st.columns(2)
 
             with col1:
-               if st.button(f"Remove Duplicates From The File:{file.name}"):
-                  df.drop_duplicates(inplace=True)  
-                  st.write("Dupliace Remove!!")
+                if st.button(f"Remove Duplicates from the File: {file.name}"):
+                    df.drop_duplicates(inplace=True)
+                    st.write("Duplicates Removed!")
 
-               with col2:
-                  if st.button(f"Fill Mising Value:{file.name}"):
-                     numeric_cols= df.select_dtypes(includes=['number']).columns
-                     df[numeric_cols]=df[numeric_cols].fillna(df[numeric_cols].mean())
-                     st.write("Mising Value Has been Filled!!!!")
+            with col2:
+                if st.button(f"Fill Missing Values: {file.name}"):
+                    numeric_cols = df.select_dtypes(include=['number']).columns
+                    df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].mean())
+                    st.write("Missing Values Have Been Filled!")
 
+            # Column selection after cleaning
+            st.subheader("Select Columns to Keep")
+            columns = st.multiselect(f"Choose Columns for {file.name}", df.columns, default=df.columns)
+            df = df[columns]
 
-                     st.subheader("Select Column To Keep")
-                     columns=st.multiselect(f"Choose Column For {file.name}",df.columns , default=df.columns)
-                     df=df(columns)
+            # Data Visualization
+            st.subheader("Data Visualization")
+            show_viz = st.checkbox(f"Show Visualization for {file.name}")
+            numeric_df = df.select_dtypes(include='number')
+            if show_viz:
+                if numeric_df.shape[1] >= 2:
+                    st.bar_chart(numeric_df.iloc[:, :2])
+                else:
+                    st.warning("There are fewer than two numeric columns to plot.")
 
-                  #DATA VISULIZATION
+            # Conversion options
+            st.subheader("Conversion Options")
+            conservation_type = st.radio(f"Convert {file.name} to:", ["CSV", "Excel"], key=file.name)
+            if st.button(f"Convert {file.name}"):
+                buffer = BytesIO()
+                if conservation_type == "CSV":
+                    df.to_csv(buffer, index=False)
+                    file_name = file.name.replace(file_ext, ".csv")
+                    mime_type = "text/csv"
+                elif conservation_type == "Excel":
+                    df.to_excel(buffer, index=False)
+                    file_name = file.name.replace(file_ext, ".xlsx")
+                    mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    buffer.seek(0)
 
-                  st.subheader("Data Visulization")
-                  st.checkbox(f"Show Visulization For{file.name}")
-                  numeric_df = df.select_dtypes(include='number')
-                  if numeric_df.shape[1] >= 2:
-                      st.bar_chart(numeric_df.iloc[:, :2])
-                  else:   
-                       st.warning("There are fewer than two numeric columns to plot.") 
+                # Provide download button
+                st.download_button(
+                    label=f"Download {file.name} as {conservation_type}",
+                    data=buffer,
+                    file_name=file_name,
+                    mime=mime_type
+                )
 
-
-                  #Conservation Option
-
-                  st.subheader("Coservation Option")
-                  conservation_type=st.radio(f"Convert {file.name} to:", ["CSV", "Excel"], key=file.name)
-                  if st.button(f"convert{file.name}"):
-                     buffer=BytesIO()
-                     if conservation_type=="CVS":
-                        df.to.cvs(buffer,index=False)
-                        file_name=file.name.replace(file_ext,".cvs")
-                        mime_type="text/cvs"
-
-                     elif conservation_type=="Excel":
-                        df.to.excel(buffer,index=False)
-                        file_name=file.name.replace(file_ext,".xlsx")
-                        mime_type="application/vnd.openxmlformats-officedocuments.spreadsheethtml.sheet"
-                        buffer.seek(0)
-
-                        st.download_button(
-                           label=f"Download{file.name} as {conservation_type}",
-                           data=buffer,
-                           file_name=file_name,
-                           mime=mime_type
-                        )
-
-                        st.sucess("All File Proceed Sucessfully!!!!!!!!!!!")
-                      
-
-
-
-
-                     
-
-
-
-        
-        
-    
+                st.success("File Processing Completed Successfully!")
 
